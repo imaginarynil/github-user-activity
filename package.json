@@ -1,0 +1,27 @@
+{
+  "name": "github-user-activity",
+  "version": "1.0.0",
+  "description": "A console application to get a Github user's activities",
+  "homepage": "https://github.com/imaginarynil/github-user-activity#readme",
+  "bugs": {
+    "url": "https://github.com/imaginarynil/github-user-activity/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imaginarynil/github-user-activity.git"
+  },
+  "license": "MIT",
+  "author": "Daniel Sugianto",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "commander": "^15.0.0"
+  },
+  "bin": {
+    "github-user-activity": "./index.js"
+  }
+}
