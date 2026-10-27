@@ -44,6 +44,7 @@ try {
         }
         break;
       case EventType.WatchEvent:
+        events.push(`Starred ${event.repo.name}`);
         break;
       case EventType.CreateEvent:
         break;
