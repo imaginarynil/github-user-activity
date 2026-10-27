@@ -36,16 +36,11 @@ function handlePushEvent(countMap, repoName) {
   }
 }
 
-try {
-  const res = await axios.get(url);
-  if (res.data.length === 0) {
-    console.log("No events");
-    process.exit(0);
-  }
+function getEventReports(data) {
   const events = [];
   const countMap = new Map();
   // handle events
-  for (const event of res.data) {
+  for (const event of data) {
     switch (event["type"]) {
       case EventType.PushEvent:
         handlePushEvent(countMap, event["repo"]["name"]);
@@ -78,15 +73,27 @@ try {
       events.unshift(`Pushed ${value} commits to ${key}`);
     }
   }
-  // print events
-  printEvents(events);
-} catch (error) {
-  switch (error.status) {
-    case 404:
-      console.log("Username is not found");
-      break;
-    default:
-      console.log("An error has occured");
-      console.error(error);
+  return events;
+}
+
+async function main() {
+  try {
+    const res = await axios.get(url);
+    if (res.data.length === 0) {
+      console.log("No events");
+      process.exit(0);
+    }
+    printEvents(getEventReports(res.data));
+  } catch (error) {
+    switch (error.status) {
+      case 404:
+        console.log("Username is not found");
+        break;
+      default:
+        console.log("An error has occured");
+        console.error(error);
+    }
   }
 }
+
+main();
