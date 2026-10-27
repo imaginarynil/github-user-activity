@@ -10,20 +10,13 @@ program.parse();
 const username = program.args[0];
 const url = `https://api.github.com/users/${username}/events`;
 
-function getCommitMap(events) {
-  const map = new Map();
-  for (const event of events) {
-    if (event["type"] == "PushEvent") {
-      const repoName = event["repo"]["name"];
-      if (map.has(repoName)) {
-        map.set(repoName, map.get(repoName) + 1);
-      } else {
-        map.set(repoName, 1);
-      }
-    }
-  }
-  return map;
-}
+const EventType = Object.freeze({
+  PushEvent: "PushEvent",
+  WatchEvent: "WatchEvent",
+  CreateEvent: "CreateEvent",
+  IssuesEvent: "IssuesEvent",
+  ForkEvent: "ForkEvent",
+});
 
 function printEvents(events) {
   for (const event of events) {
@@ -34,24 +27,38 @@ function printEvents(events) {
 try {
   const res = await axios.get(url);
   const events = [];
-  // handle push events
-  const commitMap = getCommitMap(res.data);
-  for (const [key, value] of commitMap.entries()) {
-    events.push(`Pushed ${value} commits to ${key}`);
-  }
-  // handle other events
+  const countMap = new Map();
+  // handle events
   for (const event of res.data) {
     switch (event["type"]) {
-      case "WatchEvent":
+      case EventType.PushEvent:
+        if (!countMap.has(EventType.PushEvent)) {
+          countMap.set(EventType.PushEvent, new Map());
+        }
+        const m = countMap.get(EventType.PushEvent);
+        const repoName = event["repo"]["name"];
+        if (m.has(repoName)) {
+          m.set(repoName, m.get(repoName) + 1);
+        } else {
+          m.set(repoName, 1);
+        }
         break;
-      case "CreateEvent":
+      case EventType.WatchEvent:
         break;
-      case "IssuesEvent":
+      case EventType.CreateEvent:
         break;
-      case "ForkEvent":
+      case EventType.IssuesEvent:
+        break;
+      case EventType.ForkEvent:
         break;
       default:
+        events.push(
+          `Unregistered event of type \"${event.type}\" on ${event.repo.name}`,
+        );
     }
+  }
+  for (const [key, value] of countMap.get(EventType.PushEvent).entries()) {
+    events.unshift(`Pushed ${value} commits to ${key}`);
   }
   // print events
   printEvents(events);
