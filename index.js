@@ -47,6 +47,8 @@ try {
         events.push(`Starred ${event.repo.name}`);
         break;
       case EventType.CreateEvent:
+        const payload = event.payload;
+        events.push(`Created a ${payload.ref_type} in ${event.repo.name}`);
         break;
       case EventType.IssuesEvent:
         break;
