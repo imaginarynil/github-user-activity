@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-import { program } from "commander";
+import { Command } from "commander";
 import axios from "axios";
 
-program.argument("<username>");
-
+const program = new Command();
+program.argument("<username>").option("-t, --type <type>", "event type");
 program.parse();
+const options = program.opts();
 
 const username = program.args[0];
 const url = `https://api.github.com/users/${username}/events`;
@@ -20,6 +21,9 @@ const EventType = Object.freeze({
 });
 
 function printEvents(eventReports) {
+  if (eventReports.length === 0) {
+    console.log("No events");
+  }
   for (const eventReport of eventReports) {
     console.log(`- ${eventReport.report}`);
   }
@@ -109,7 +113,13 @@ async function main() {
       console.log("No events");
       process.exit(0);
     }
-    printEvents(getEventReports(res.data));
+    let eventReports = getEventReports(res.data);
+    if (options.type) {
+      eventReports = eventReports.filter(
+        (e) => e.type.toLowerCase() === options.type.toLowerCase(),
+      );
+    }
+    printEvents(eventReports);
   } catch (error) {
     switch (error.status) {
       case 404:
