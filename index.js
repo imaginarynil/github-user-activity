@@ -47,10 +47,14 @@ try {
         events.push(`Starred ${event.repo.name}`);
         break;
       case EventType.CreateEvent:
-        const payload = event.payload;
-        events.push(`Created a ${payload.ref_type} in ${event.repo.name}`);
+        events.push(
+          `Created a ${event.payload.ref_type} in ${event.repo.name}`,
+        );
         break;
       case EventType.IssuesEvent:
+        events.push(
+          `${event.payload.action.charAt(0).toUpperCase() + event.payload.action.slice(1)} an issue in ${event.repo.name}`,
+        );
         break;
       case EventType.ForkEvent:
         break;
@@ -71,6 +75,8 @@ try {
       console.log("Username is not found");
       break;
     default:
+      console.error(error);
+
       console.log("An error has occured");
   }
 }
