@@ -24,6 +24,18 @@ function printEvents(events) {
   }
 }
 
+function handlePushEvent(countMap, repoName) {
+  if (!countMap.has(EventType.PushEvent)) {
+    countMap.set(EventType.PushEvent, new Map());
+  }
+  const m = countMap.get(EventType.PushEvent);
+  if (m.has(repoName)) {
+    m.set(repoName, m.get(repoName) + 1);
+  } else {
+    m.set(repoName, 1);
+  }
+}
+
 try {
   const res = await axios.get(url);
   const events = [];
@@ -32,16 +44,7 @@ try {
   for (const event of res.data) {
     switch (event["type"]) {
       case EventType.PushEvent:
-        if (!countMap.has(EventType.PushEvent)) {
-          countMap.set(EventType.PushEvent, new Map());
-        }
-        const m = countMap.get(EventType.PushEvent);
-        const repoName = event["repo"]["name"];
-        if (m.has(repoName)) {
-          m.set(repoName, m.get(repoName) + 1);
-        } else {
-          m.set(repoName, 1);
-        }
+        handlePushEvent(countMap, event["repo"]["name"]);
         break;
       case EventType.WatchEvent:
         events.push(`Starred ${event.repo.name}`);
@@ -65,6 +68,7 @@ try {
         );
     }
   }
+  // add commit counts to events
   for (const [key, value] of countMap.get(EventType.PushEvent).entries()) {
     events.unshift(`Pushed ${value} commits to ${key}`);
   }
