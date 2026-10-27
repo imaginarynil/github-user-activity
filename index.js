@@ -57,6 +57,7 @@ try {
         );
         break;
       case EventType.ForkEvent:
+        events.push(`Forked ${event.repo.name}`);
         break;
       default:
         events.push(
