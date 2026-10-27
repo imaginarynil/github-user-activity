@@ -38,6 +38,10 @@ function handlePushEvent(countMap, repoName) {
 
 try {
   const res = await axios.get(url);
+  if (res.data.length === 0) {
+    console.log("No events");
+    process.exit(0);
+  }
   const events = [];
   const countMap = new Map();
   // handle events
@@ -69,8 +73,10 @@ try {
     }
   }
   // add commit counts to events
-  for (const [key, value] of countMap.get(EventType.PushEvent).entries()) {
-    events.unshift(`Pushed ${value} commits to ${key}`);
+  if (countMap.has(EventType.PushEvent)) {
+    for (const [key, value] of countMap.get(EventType.PushEvent).entries()) {
+      events.unshift(`Pushed ${value} commits to ${key}`);
+    }
   }
   // print events
   printEvents(events);
@@ -80,15 +86,7 @@ try {
       console.log("Username is not found");
       break;
     default:
-      console.error(error);
-
       console.log("An error has occured");
+      console.error(error);
   }
 }
-
-/*
-WatchEvent
-PushEvent
-CreateEvent
-IssuesEvent
-ForkEvent */
