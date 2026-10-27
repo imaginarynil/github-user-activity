@@ -16,11 +16,12 @@ const EventType = Object.freeze({
   CreateEvent: "CreateEvent",
   IssuesEvent: "IssuesEvent",
   ForkEvent: "ForkEvent",
+  UnregisteredEvent: "UnregisteredEvent",
 });
 
-function printEvents(events) {
-  for (const event of events) {
-    console.log(`- ${event}`);
+function printEvents(eventReports) {
+  for (const eventReport of eventReports) {
+    console.log(`- ${eventReport.report}`);
   }
 }
 
@@ -36,8 +37,15 @@ function handlePushEvent(countMap, repoName) {
   }
 }
 
+class EventReport {
+  constructor(type, report) {
+    this.type = type;
+    this.report = report;
+  }
+}
+
 function getEventReports(data) {
-  const events = [];
+  const eventReports = [];
   const countMap = new Map();
   // handle events
   for (const event of data) {
@@ -46,34 +54,52 @@ function getEventReports(data) {
         handlePushEvent(countMap, event["repo"]["name"]);
         break;
       case EventType.WatchEvent:
-        events.push(`Starred ${event.repo.name}`);
+        eventReports.push(
+          new EventReport(EventType.WatchEvent, `Starred ${event.repo.name}`),
+        );
         break;
       case EventType.CreateEvent:
-        events.push(
-          `Created a ${event.payload.ref_type} in ${event.repo.name}`,
+        eventReports.push(
+          new EventReport(
+            EventType.CreateEvent,
+            `Created a ${event.payload.ref_type} in ${event.repo.name}`,
+          ),
         );
         break;
       case EventType.IssuesEvent:
-        events.push(
-          `${event.payload.action.charAt(0).toUpperCase() + event.payload.action.slice(1)} an issue in ${event.repo.name}`,
+        eventReports.push(
+          new EventReport(
+            EventType.IssuesEvent,
+            `${event.payload.action.charAt(0).toUpperCase() + event.payload.action.slice(1)} an issue in ${event.repo.name}`,
+          ),
         );
         break;
       case EventType.ForkEvent:
-        events.push(`Forked ${event.repo.name}`);
+        eventReports.push(
+          new EventReport(EventType.ForkEvent, `Forked ${event.repo.name}`),
+        );
         break;
       default:
-        events.push(
-          `Unregistered event of type \"${event.type}\" on ${event.repo.name}`,
+        eventReports.push(
+          new EventReport(
+            EventType.UnregisteredEvent,
+            `Unregistered event of type \"${event.type}\" on ${event.repo.name}`,
+          ),
         );
     }
   }
   // add commit counts to events
   if (countMap.has(EventType.PushEvent)) {
     for (const [key, value] of countMap.get(EventType.PushEvent).entries()) {
-      events.unshift(`Pushed ${value} commits to ${key}`);
+      eventReports.unshift(
+        new EventReport(
+          EventType.PushEvent,
+          `Pushed ${value} commits to ${key}`,
+        ),
+      );
     }
   }
-  return events;
+  return eventReports;
 }
 
 async function main() {
